@@ -164,3 +164,121 @@ LEU_ENKEPHALIN_REFERENCE = {
     "target_receptor": "DOR",
     "plasma_half_life_minutes": 2
 }
+
+
+# ============== Additional Models for Services ==============
+
+class JobStatus(str, Enum):
+    """Status of a design job"""
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class DesignType(str, Enum):
+    """Types of molecular design"""
+    ANALOGUE = "analogue"
+    BIVALENT = "bivalent"
+    SCAFFOLD_HOP = "scaffold_hop"
+    DE_NOVO = "de_novo"
+
+
+class ADMETProfile(BaseModel):
+    """ADMET (Absorption, Distribution, Metabolism, Excretion, Toxicity) profile"""
+    # Absorption
+    caco2_permeability: float = -5.5
+    human_intestinal_absorption: float = 80.0
+    pgp_substrate: bool = False
+    pgp_inhibitor: bool = False
+
+    # Distribution
+    vdss: float = 0.5
+    bbb_penetration: bool = False
+    cns_penetration: bool = False
+    plasma_protein_binding: float = 90.0
+
+    # Metabolism
+    cyp1a2_inhibitor: bool = False
+    cyp2c9_inhibitor: bool = False
+    cyp2c19_inhibitor: bool = False
+    cyp2d6_inhibitor: bool = False
+    cyp3a4_inhibitor: bool = False
+    cyp2d6_substrate: bool = False
+    cyp3a4_substrate: bool = True
+
+    # Excretion
+    clearance: float = 10.0
+    half_life: float = 6.0
+
+    # Toxicity
+    herg_inhibitor: bool = False
+    herg_pic50: Optional[float] = None
+    ames_toxicity: bool = False
+    hepatotoxicity: bool = False
+    skin_sensitization: bool = False
+    ld50: Optional[float] = None
+
+    warnings: List[str] = []
+
+    def get_safety_score(self) -> float:
+        """Calculate overall safety score (0-1, higher is safer)"""
+        score = 1.0
+        if self.herg_inhibitor:
+            score -= 0.3
+        if self.ames_toxicity:
+            score -= 0.3
+        if self.hepatotoxicity:
+            score -= 0.2
+        if len(self.warnings) > 3:
+            score -= 0.1
+        return max(0.0, score)
+
+
+class ReactionStep(BaseModel):
+    """A single step in a synthesis route"""
+    step_number: int
+    reaction_smiles: str
+    reaction_name: str
+    reactants: List[str] = []
+    reagents: List[str] = []
+    solvent: Optional[str] = None
+    temperature: Optional[str] = None
+    time: Optional[str] = None
+    atmosphere: Optional[str] = None
+    expected_yield: float = 0.8
+    confidence: float = 0.8
+    reference: Optional[str] = None
+
+
+class SynthesisRoute(BaseModel):
+    """A complete synthesis route"""
+    steps: List[ReactionStep] = []
+    starting_materials: List[Dict[str, Any]] = []
+    source: str = "unknown"
+    total_steps: int = 0
+    overall_yield: float = 0.0
+    estimated_cost: Optional[float] = None
+    confidence: float = 0.5
+
+    def calculate_metrics(self):
+        """Calculate route metrics"""
+        self.total_steps = len(self.steps)
+        if self.steps:
+            self.overall_yield = 1.0
+            for step in self.steps:
+                self.overall_yield *= step.expected_yield
+            self.confidence = sum(s.confidence for s in self.steps) / len(self.steps)
+
+
+class DesignedMolecule(BaseModel):
+    """A designed molecule with all associated data"""
+    rank: int = 0
+    smiles: str
+    inchi_key: Optional[str] = None
+    overall_score: float = 0.0
+    properties: Optional[MolecularProperties] = None
+    novelty: Optional[NoveltyAssessment] = None
+    admet: Optional[ADMETProfile] = None
+    best_route: Optional[SynthesisRoute] = None
+    rationale: str = ""
