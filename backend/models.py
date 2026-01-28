@@ -282,3 +282,66 @@ class DesignedMolecule(BaseModel):
     admet: Optional[ADMETProfile] = None
     best_route: Optional[SynthesisRoute] = None
     rationale: str = ""
+
+
+class BindingPrediction(BaseModel):
+    """Binding affinity prediction"""
+    value: float = 0.0
+    unit: str = "pKi"
+    confidence: float = 0.5
+    method: str = "unknown"
+
+
+class DesignJob(BaseModel):
+    """A drug design job tracking state and results"""
+    id: str = ""
+    prompt: str = ""
+    user_id: Optional[str] = None
+    status: JobStatus = JobStatus.PENDING
+    design_type: DesignType = DesignType.ANALOGUE
+    current_step: str = ""
+    progress: float = 0.0
+
+    # Reference compound info
+    reference_smiles: Optional[str] = None
+    reference_name: Optional[str] = None
+    target_name: Optional[str] = None
+    constraints: Dict[str, Any] = {}
+
+    # Timestamps
+    created_at: datetime = None
+    started_at: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+
+    # Results
+    molecules: List[DesignedMolecule] = []
+    error_message: Optional[str] = None
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    def __init__(self, **data):
+        if "id" not in data or not data["id"]:
+            import uuid
+            data["id"] = str(uuid.uuid4())
+        if "created_at" not in data or data["created_at"] is None:
+            data["created_at"] = datetime.utcnow()
+        super().__init__(**data)
+
+    def update_progress(self, step: str, progress: float):
+        """Update job progress"""
+        self.current_step = step
+        self.progress = progress
+
+    def complete(self, molecules: List[DesignedMolecule]):
+        """Mark job as completed"""
+        self.status = JobStatus.COMPLETED
+        self.molecules = molecules
+        self.completed_at = datetime.utcnow()
+        self.progress = 1.0
+
+    def fail(self, error: str):
+        """Mark job as failed"""
+        self.status = JobStatus.FAILED
+        self.error_message = error
+        self.completed_at = datetime.utcnow()
