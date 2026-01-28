@@ -7,6 +7,22 @@ from enum import Enum
 from datetime import datetime
 
 
+class MolecularProperties(BaseModel):
+    """Molecular properties calculated by RDKit"""
+    molecular_weight: float
+    logp: float
+    tpsa: float
+    hbd: int
+    hba: int
+    rotatable_bonds: int
+    num_rings: int
+    num_aromatic_rings: int
+    formula: str
+    qed: float
+    lipinski_violations: int
+    sa_score: float
+
+
 class InputFormat(str, Enum):
     """Supported input formats"""
     SMILES = "smiles"
@@ -43,15 +59,21 @@ class PropertyPrediction(BaseModel):
 
 
 class NoveltyAssessment(BaseModel):
-    """Novelty and patentability assessment"""
-    is_novel: bool
-    confidence_score: float = Field(..., ge=0, le=1)
-    closest_known_compound: Optional[str] = None
-    closest_similarity: Optional[float] = None
-    pubchem_matches: int = 0
-    chembl_matches: int = 0
-    patent_matches: int = 0
-    non_obviousness_rationale: Optional[str] = None
+    """Novelty and patentability assessment from molecular analyzer"""
+    nearest_known_smiles: str = ""
+    nearest_known_name: Optional[str] = None
+    tanimoto_similarity: float = 0.0
+    scaffold_novel: bool = True
+    exact_patent_match: bool = False
+    markush_coverage: List[str] = []
+    similar_patents: List[Dict[str, Any]] = []
+    fto_risk: str = "low"
+    blocking_patents: List[str] = []
+    expiry_dates: Dict[str, str] = {}
+    novel: bool = True
+    patentable: bool = True
+    confidence: float = 0.7
+    notes: str = ""
 
 
 class SynthesisGuidance(BaseModel):
