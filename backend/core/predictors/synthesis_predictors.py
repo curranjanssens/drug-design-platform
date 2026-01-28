@@ -15,7 +15,14 @@ import math
 
 from rdkit import Chem
 from rdkit.Chem import Descriptors, rdMolDescriptors, AllChem
-from rdkit.Contrib.SA_Score import sascorer
+
+# SA Score module is in Contrib which may not always be available
+try:
+    from rdkit.Contrib.SA_Score import sascorer
+    SASCORER_AVAILABLE = True
+except ImportError:
+    sascorer = None
+    SASCORER_AVAILABLE = False
 
 from ..prediction import Prediction, ConfidenceLevel, PredictionBasis
 from ..predictor_registry import Predictor, PredictorCapability, registry
@@ -125,12 +132,19 @@ class SASynthesisPredictor(Predictor):
         prop = capability.predicts
 
         # Calculate SA Score
-        try:
-            sa_score = sascorer.calculateScore(mol)
-        except Exception as e:
-            logger.warning(f"SA Score calculation failed: {e}")
-            # Fall back to simple complexity-based estimate
-            complexity = self._analyze_complexity(mol)
+        complexity = self._analyze_complexity(mol)
+        if SASCORER_AVAILABLE and sascorer is not None:
+            try:
+                sa_score = sascorer.calculateScore(mol)
+            except Exception as e:
+                logger.warning(f"SA Score calculation failed: {e}")
+                # Fall back to simple complexity-based estimate
+                sa_score = 1 + (complexity["heavy_atoms"] / 10) + \
+                          (complexity["stereocenters"] * 0.5) + \
+                          (complexity["ring_count"] * 0.3)
+                sa_score = min(10, max(1, sa_score))
+        else:
+            # SA Score module not available, use simple complexity-based estimate
             sa_score = 1 + (complexity["heavy_atoms"] / 10) + \
                       (complexity["stereocenters"] * 0.5) + \
                       (complexity["ring_count"] * 0.3)
