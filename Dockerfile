@@ -29,11 +29,14 @@ COPY . .
 # Create data directories
 RUN mkdir -p /app/data /app/output /app/temp
 
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
 # Default port (Railway will override via PORT env var)
 ENV PORT=8000
 
 # Expose port (informational)
 EXPOSE 8000
 
-# Run the application with conda environment using PORT env var
-CMD conda run --no-capture-output -n drugdesign uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+# Use bash to run the startup script
+CMD ["/bin/bash", "/app/start.sh"]
