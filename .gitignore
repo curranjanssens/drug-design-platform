@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+.env
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Local data
+*.db
+*.sqlite
+data/
+output/
+temp/
+logs/
+*.log
+
+# Secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Models (large files)
+models/
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# Cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml

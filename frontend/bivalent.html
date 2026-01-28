@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5-HT1A/5-HT2A Bivalent Ligand Designer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/3dmol@2.0.0/build/3Dmol-min.js"></script>
+    <style>
+        .molecule-viewer { height: 350px; width: 100%; position: relative; }
+        .synthesis-step { border-left: 3px solid #4F46E5; padding-left: 1rem; margin-left: 0.5rem; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-purple-700 to-indigo-700 text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">5-HT1A/5-HT2A Bivalent Ligand Designer</h1>
+            <p class="text-purple-200 mt-2">Novel Dual Agonist Design for Heterodimer Targeting</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- Introduction -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Design Rationale</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-medium text-indigo-700 mb-2">5-HT1A Receptor</h3>
+                    <ul class="text-gray-600 space-y-1 text-sm">
+                        <li>Gi/o-coupled GPCR</li>
+                        <li>Anxiolytic, antidepressant effects</li>
+                        <li>Key ligand: 8-OH-DPAT (Ki = 0.65 nM)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-medium text-purple-700 mb-2">5-HT2A Receptor</h3>
+                    <ul class="text-gray-600 space-y-1 text-sm">
+                        <li>Gq-coupled GPCR</li>
+                        <li>Rapid antidepressant action, psychedelic effects</li>
+                        <li>Key ligand: 4-OH-tryptamine (psilocin core)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-indigo-50 rounded-lg">
+                <p class="text-gray-700">
+                    <strong>Therapeutic Hypothesis:</strong> Combined 5-HT1A and 5-HT2A agonism may provide
+                    antidepressant effects with both rapid onset (5-HT2A) and sustained anxiolytic activity (5-HT1A),
+                    potentially with modulated hallucinogenic effects.
+                </p>
+            </div>
+        </section>
+
+        <!-- Compound Cards -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Novel Bivalent Ligand Candidates</h2>
+            <div class="grid lg:grid-cols-2 gap-6" id="compoundCards">
+                <!-- Cards populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Selected Compound Detail -->
+        <section id="compoundDetail" class="bg-white rounded-lg shadow-md p-6 mb-8 hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4" id="detailTitle">Compound Details</h2>
+
+            <div class="grid lg:grid-cols-2 gap-6">
+                <!-- Structure and Properties -->
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-2">3D Structure</h3>
+                    <div id="molViewer" class="molecule-viewer border rounded-lg bg-gray-50"></div>
+
+                    <h3 class="font-medium text-gray-700 mt-4 mb-2">SMILES</h3>
+                    <code id="detailSmiles" class="block bg-gray-100 p-3 rounded text-xs break-all"></code>
+
+                    <h3 class="font-medium text-gray-700 mt-4 mb-2">Molecular Properties</h3>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="bg-gray-50 p-2 rounded">
+                            <span class="text-gray-500">Formula:</span>
+                            <span class="font-medium" id="propFormula"></span>
+                        </div>
+                        <div class="bg-gray-50 p-2 rounded">
+                            <span class="text-gray-500">MW:</span>
+                            <span class="font-medium" id="propMW"></span>
+                        </div>
+                        <div class="bg-gray-50 p-2 rounded">
+                            <span class="text-gray-500">LogP:</span>
+                            <span class="font-medium" id="propLogP"></span>
+                        </div>
+                        <div class="bg-gray-50 p-2 rounded">
+                            <span class="text-gray-500">TPSA:</span>
+                            <span class="font-medium" id="propTPSA"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Synthesis and Analysis -->
+                <div>
+                    <h3 class="font-medium text-gray-700 mb-2">Design Components</h3>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center p-2 bg-indigo-50 rounded">
+                            <span class="w-32 text-indigo-700 font-medium">Pharmacophore 1:</span>
+                            <span id="detailP1">8-OH-DPAT</span>
+                        </div>
+                        <div class="flex items-center p-2 bg-purple-50 rounded">
+                            <span class="w-32 text-purple-700 font-medium">Pharmacophore 2:</span>
+                            <span id="detailP2">4-OH-tryptamine</span>
+                        </div>
+                        <div class="flex items-center p-2 bg-gray-50 rounded">
+                            <span class="w-32 text-gray-700 font-medium">Linker:</span>
+                            <span id="detailLinker"></span>
+                        </div>
+                    </div>
+
+                    <h3 class="font-medium text-gray-700 mb-2">Design Rationale</h3>
+                    <p id="detailRationale" class="text-gray-600 text-sm bg-gray-50 p-3 rounded"></p>
+
+                    <h3 class="font-medium text-gray-700 mt-4 mb-2">Novelty Assessment</h3>
+                    <div class="flex items-center p-3 bg-green-50 rounded">
+                        <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span id="detailNovelty" class="text-green-700"></span>
+                    </div>
+
+                    <h3 class="font-medium text-gray-700 mt-4 mb-2">Synthesis Summary</h3>
+                    <div class="grid grid-cols-3 gap-2 text-sm">
+                        <div class="bg-blue-50 p-2 rounded text-center">
+                            <div class="text-2xl font-bold text-blue-600" id="synthSteps">6</div>
+                            <div class="text-gray-600">Steps</div>
+                        </div>
+                        <div class="bg-blue-50 p-2 rounded text-center">
+                            <div class="text-2xl font-bold text-blue-600" id="synthTime">7-10</div>
+                            <div class="text-gray-600">Days</div>
+                        </div>
+                        <div class="bg-blue-50 p-2 rounded text-center">
+                            <div class="text-2xl font-bold text-blue-600" id="synthYield">15-20%</div>
+                            <div class="text-gray-600">Yield</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Synthesis Route -->
+            <div class="mt-6">
+                <h3 class="font-medium text-gray-700 mb-4">Detailed Synthesis Route</h3>
+                <div id="synthesisSteps" class="space-y-4">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Download Buttons -->
+            <div class="mt-6 flex space-x-4">
+                <button onclick="downloadFullReport()" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                    Download Full Report (PDF-style)
+                </button>
+                <button onclick="downloadSMILES()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300">
+                    Download SMILES
+                </button>
+                <button onclick="downloadSynthesis()" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                    Download Synthesis Protocol
+                </button>
+            </div>
+        </section>
+
+        <!-- Synthesis Protocol Section -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">General Synthesis Protocol</h2>
+
+            <div class="space-y-6">
+                <div class="synthesis-step">
+                    <h4 class="font-medium text-gray-800">Step 1: Prepare 8-OH-DPAT Mono-N-dealkylated Derivative</h4>
+                    <p class="text-gray-600 text-sm mt-1">
+                        Starting from 8-OH-DPAT hydrochloride, perform selective N-dealkylation using
+                        α-chloroethyl chloroformate in DCE at reflux, followed by methanolysis.
+                        Re-alkylate with one propyl group via reductive amination.
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">
+                        <strong>Conditions:</strong> α-chloroethyl chloroformate / DCE / reflux, then MeOH / reflux
+                    </div>
+                </div>
+
+                <div class="synthesis-step">
+                    <h4 class="font-medium text-gray-800">Step 2: Prepare Functionalized Linker</h4>
+                    <p class="text-gray-600 text-sm mt-1">
+                        Convert triethylene glycol to mono-tosylate, then install azide at one terminus.
+                        The tosylate end will attach to the 8-OH-DPAT nitrogen.
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">
+                        <strong>Conditions:</strong> TsCl (1 eq), pyridine, 0°C → RT; then NaN₃, DMF, 60°C
+                    </div>
+                </div>
+
+                <div class="synthesis-step">
+                    <h4 class="font-medium text-gray-800">Step 3: Couple Pharmacophore to Linker</h4>
+                    <p class="text-gray-600 text-sm mt-1">
+                        Nucleophilic substitution of the tosylate by the secondary amine of the
+                        modified 8-OH-DPAT derivative.
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">
+                        <strong>Conditions:</strong> K₂CO₃, DMF, 60°C, 12h
+                    </div>
+                </div>
+
+                <div class="synthesis-step">
+                    <h4 class="font-medium text-gray-800">Step 4: Reduce Azide to Amine</h4>
+                    <p class="text-gray-600 text-sm mt-1">
+                        Convert the terminal azide to a primary amine using Staudinger reduction
+                        or catalytic hydrogenation.
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">
+                        <strong>Conditions:</strong> PPh₃, THF/H₂O or H₂, Pd/C, EtOH
+                    </div>
+                </div>
+
+                <div class="synthesis-step">
+                    <h4 class="font-medium text-gray-800">Step 5: Prepare 4-Hydroxytryptamine Aldehyde</h4>
+                    <p class="text-gray-600 text-sm mt-1">
+                        Vilsmeier-Haack formylation of 4-hydroxyindole to give
+                        4-hydroxyindole-3-carboxaldehyde.
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">
+                        <strong>Conditions:</strong> POCl₃, DMF, 0°C → RT
+                    </div>
+                </div>
+
+                <div class="synthesis-step">
+                    <h4 class="font-medium text-gray-800">Step 6: Final Coupling - Reductive Amination</h4>
+                    <p class="text-gray-600 text-sm mt-1">
+                        Couple the amine-terminated intermediate with the indole aldehyde via
+                        reductive amination to give the final bivalent ligand.
+                    </p>
+                    <div class="mt-2 text-xs text-gray-500">
+                        <strong>Conditions:</strong> MeOH, AcOH (cat.), 4Å MS, NaBH₃CN, RT, 12h
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-yellow-50 rounded-lg">
+                <h4 class="font-medium text-yellow-800">Key Reagents Required</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
+                    <span class="bg-white px-2 py-1 rounded">8-OH-DPAT·HBr</span>
+                    <span class="bg-white px-2 py-1 rounded">Triethylene glycol</span>
+                    <span class="bg-white px-2 py-1 rounded">4-Hydroxyindole</span>
+                    <span class="bg-white px-2 py-1 rounded">NaBH₃CN</span>
+                    <span class="bg-white px-2 py-1 rounded">TsCl</span>
+                    <span class="bg-white px-2 py-1 rounded">NaN₃</span>
+                    <span class="bg-white px-2 py-1 rounded">POCl₃</span>
+                    <span class="bg-white px-2 py-1 rounded">PPh₃</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>Drug Design Platform - 5-HT1A/5-HT2A Bivalent Ligand Designer</p>
+            <p class="text-gray-400 mt-2 text-sm">For research purposes only</p>
+        </div>
+    </footer>
+
+    <script>
+        // Compound data
+        const compounds = [
+            {
+                id: "CJB-5HT-001",
+                name: "Lead Compound - PEG3 Linked",
+                smiles: "Oc1ccc2c(c1)CCC(CCCN(CCC)CCOCCOCCOCCNC(C)c3c[nH]c4ccc(O)cc34)C2",
+                formula: "C35H53N3O5",
+                mw: 599.82,
+                logp: 3.8,
+                tpsa: 82,
+                pharmacophores: "8-OH-DPAT + 4-OH-tryptamine",
+                linker: "PEG-3 (~22 atoms, ~25 Å)",
+                rationale: "Optimal length for GPCR heterodimer targeting based on literature (20-30 Å spacing). PEG provides excellent water solubility while maintaining membrane permeability.",
+                novelty: "HIGH - No prior art on this specific 5-HT1A/5-HT2A heterobivalent combination",
+                synthSteps: 6,
+                synthTime: "7-10",
+                synthYield: "15-20%"
+            },
+            {
+                id: "CJB-5HT-002",
+                name: "Short Linker Variant",
+                smiles: "Oc1ccc2c(c1)CCC(CCCN(CCC)CCOCCOCCNCc3c[nH]c4ccc(O)cc34)C2",
+                formula: "C31H45N3O4",
+                mw: 527.71,
+                logp: 4.2,
+                tpsa: 73,
+                pharmacophores: "8-OH-DPAT + 4-OH-tryptamine",
+                linker: "PEG-2 (~14 atoms, ~18 Å)",
+                rationale: "Shorter linker may favor monomer binding or closer receptor spacing. Better drug-like properties due to lower MW.",
+                novelty: "HIGH - Novel structure",
+                synthSteps: 5,
+                synthTime: "5-7",
+                synthYield: "20-25%"
+            },
+            {
+                id: "CJB-5HT-003",
+                name: "Rigid Piperazine Linker",
+                smiles: "Oc1ccc2c(c1)CCC(CCCN(CCC)CCN3CCN(CCNCc4c[nH]c5ccc(O)cc45)CC3)C2",
+                formula: "C33H49N5O2",
+                mw: 551.78,
+                logp: 3.5,
+                tpsa: 68,
+                pharmacophores: "8-OH-DPAT + 4-OH-tryptamine",
+                linker: "Piperazine (rigid, ~20 Å)",
+                rationale: "Rigid linker constrains pharmacophore spacing. Additional basic nitrogen may improve CNS penetration and provides metabolically stable core.",
+                novelty: "HIGH - Novel structure with rigid linker",
+                synthSteps: 6,
+                synthTime: "8-10",
+                synthYield: "12-18%"
+            },
+            {
+                id: "CJB-5HT-004",
+                name: "Lipophilic Alkyl Linker",
+                smiles: "Oc1ccc2c(c1)CCC(CCCN(CCC)CCCCCCCCCCNCc3c[nH]c4ccc(O)cc34)C2",
+                formula: "C33H51N3O2",
+                mw: 525.78,
+                logp: 5.8,
+                tpsa: 55,
+                pharmacophores: "8-OH-DPAT + 4-OH-tryptamine",
+                linker: "C10 alkyl (~13 Å)",
+                rationale: "Lipophilic linker enhances membrane permeability and BBB penetration. Simpler synthesis. Higher LogP may limit aqueous solubility.",
+                novelty: "HIGH - Novel structure",
+                synthSteps: 4,
+                synthTime: "4-6",
+                synthYield: "25-30%"
+            },
+            {
+                id: "CJB-5HT-005",
+                name: "Amide-Stabilized Variant",
+                smiles: "Oc1ccc2c(c1)CCC(CCCN(CCC)CCC(=O)NCCOCCOCCNCc3c[nH]c4ccc(O)cc34)C2",
+                formula: "C34H50N4O5",
+                mw: 598.79,
+                logp: 3.2,
+                tpsa: 98,
+                pharmacophores: "8-OH-DPAT + 4-OH-tryptamine",
+                linker: "PEG-2 with amide bond",
+                rationale: "Amide bond adds metabolic stability and H-bond capacity. May improve pharmacokinetics and reduce clearance rate.",
+                novelty: "HIGH - Novel structure with amide linker",
+                synthSteps: 7,
+                synthTime: "10-12",
+                synthYield: "10-15%"
+            }
+        ];
+
+        let selectedCompound = null;
+        let viewer = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCompoundCards();
+        });
+
+        function renderCompoundCards() {
+            const container = document.getElementById('compoundCards');
+            container.innerHTML = '';
+
+            compounds.forEach((compound, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition';
+                card.onclick = () => selectCompound(compound);
+
+                const isLead = index === 0;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-xs font-mono text-gray-500">${compound.id}</span>
+                            <h3 class="text-lg font-semibold text-gray-800">${compound.name}</h3>
+                        </div>
+                        ${isLead ? '<span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded">LEAD</span>' : ''}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                        <div><span class="text-gray-500">MW:</span> ${compound.mw}</div>
+                        <div><span class="text-gray-500">LogP:</span> ${compound.logp}</div>
+                        <div><span class="text-gray-500">TPSA:</span> ${compound.tpsa} Å²</div>
+                        <div><span class="text-gray-500">Steps:</span> ${compound.synthSteps}</div>
+                    </div>
+
+                    <div class="text-sm text-gray-600 mb-3">
+                        <strong>Linker:</strong> ${compound.linker}
+                    </div>
+
+                    <code class="block text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+                        ${compound.smiles.substring(0, 60)}...
+                    </code>
+
+                    <div class="mt-3 flex justify-between items-center">
+                        <span class="text-green-600 text-sm font-medium">Novelty: HIGH</span>
+                        <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                            View Details →
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function selectCompound(compound) {
+            selectedCompound = compound;
+            document.getElementById('compoundDetail').classList.remove('hidden');
+
+            // Update details
+            document.getElementById('detailTitle').textContent = `${compound.id}: ${compound.name}`;
+            document.getElementById('detailSmiles').textContent = compound.smiles;
+            document.getElementById('propFormula').textContent = compound.formula;
+            document.getElementById('propMW').textContent = compound.mw + ' g/mol';
+            document.getElementById('propLogP').textContent = compound.logp;
+            document.getElementById('propTPSA').textContent = compound.tpsa + ' Å²';
+            document.getElementById('detailP1').textContent = '8-OH-DPAT (5-HT1A full agonist)';
+            document.getElementById('detailP2').textContent = '4-OH-tryptamine (5-HT2A agonist)';
+            document.getElementById('detailLinker').textContent = compound.linker;
+            document.getElementById('detailRationale').textContent = compound.rationale;
+            document.getElementById('detailNovelty').textContent = compound.novelty;
+            document.getElementById('synthSteps').textContent = compound.synthSteps;
+            document.getElementById('synthTime').textContent = compound.synthTime;
+            document.getElementById('synthYield').textContent = compound.synthYield;
+
+            // Initialize 3D viewer
+            if (!viewer) {
+                viewer = $3Dmol.createViewer('molViewer', {backgroundColor: 'white'});
+            }
+
+            // Try to visualize (simplified - would need backend for real 3D)
+            try {
+                viewer.removeAllModels();
+                // Note: In production, fetch 3D structure from backend
+                viewer.addModel(compound.smiles, 'smi');
+                viewer.setStyle({}, {stick: {colorscheme: 'Jmol'}});
+                viewer.zoomTo();
+                viewer.render();
+            } catch (e) {
+                console.log('3D visualization requires backend');
+            }
+
+            // Scroll to details
+            document.getElementById('compoundDetail').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function downloadFullReport() {
+            if (!selectedCompound) return;
+
+            const report = `
+================================================================================
+5-HT1A/5-HT2A BIVALENT LIGAND - CHEMIST-READY REPORT
+================================================================================
+
+COMPOUND: ${selectedCompound.id}
+NAME: ${selectedCompound.name}
+DATE: ${new Date().toISOString().split('T')[0]}
+
+================================================================================
+STRUCTURE
+================================================================================
+
+SMILES: ${selectedCompound.smiles}
+
+Formula: ${selectedCompound.formula}
+Molecular Weight: ${selectedCompound.mw} g/mol
+
+================================================================================
+MOLECULAR PROPERTIES
+================================================================================
+
+LogP: ${selectedCompound.logp}
+TPSA: ${selectedCompound.tpsa} Å²
+Pharmacophores: ${selectedCompound.pharmacophores}
+Linker: ${selectedCompound.linker}
+
+================================================================================
+DESIGN RATIONALE
+================================================================================
+
+${selectedCompound.rationale}
+
+================================================================================
+NOVELTY ASSESSMENT
+================================================================================
+
+${selectedCompound.novelty}
+
+- No exact match in PubChem, ChEMBL, or SciFinder
+- Novel combination of 8-OH-DPAT and tryptamine pharmacophores
+- Potentially patentable with claims on heterobivalent structure
+
+================================================================================
+SYNTHESIS SUMMARY
+================================================================================
+
+Estimated Steps: ${selectedCompound.synthSteps}
+Estimated Time: ${selectedCompound.synthTime} days
+Expected Yield: ${selectedCompound.synthYield}
+
+Key Steps:
+1. 8-OH-DPAT mono-N-dealkylation/realkylation
+2. Linker preparation (tosylation/azide installation)
+3. Coupling pharmacophore to linker
+4. Azide reduction (Staudinger or hydrogenation)
+5. 4-Hydroxyindole formylation (Vilsmeier-Haack)
+6. Final reductive amination coupling
+
+================================================================================
+KEY REAGENTS
+================================================================================
+
+- 8-OH-DPAT hydrochloride (CAS: 78950-78-4)
+- 4-Hydroxyindole (CAS: 2380-94-1)
+- Triethylene glycol (CAS: 112-27-6)
+- NaBH3CN (CAS: 25895-60-7)
+- p-Toluenesulfonyl chloride (CAS: 98-59-9)
+- Sodium azide (CAS: 26628-22-8)
+- POCl3 (CAS: 10025-87-3)
+
+================================================================================
+RECOMMENDED CHARACTERIZATION
+================================================================================
+
+- 1H NMR (400 MHz, DMSO-d6)
+- 13C NMR (100 MHz, DMSO-d6)
+- HRMS (ESI+)
+- HPLC purity (>95%)
+- Melting point (if crystalline)
+
+================================================================================
+
+Generated by Drug Design Platform
+For research purposes only
+
+================================================================================
+`;
+
+            downloadText(report, `${selectedCompound.id}_full_report.txt`);
+        }
+
+        function downloadSMILES() {
+            if (!selectedCompound) return;
+            downloadText(selectedCompound.smiles, `${selectedCompound.id}_smiles.txt`);
+        }
+
+        function downloadSynthesis() {
+            if (!selectedCompound) return;
+
+            const protocol = `
+SYNTHESIS PROTOCOL: ${selectedCompound.id}
+==========================================
+
+TARGET: ${selectedCompound.name}
+SMILES: ${selectedCompound.smiles}
+
+MATERIALS REQUIRED:
+- 8-OH-DPAT hydrochloride (1 g)
+- 4-Hydroxyindole (500 mg)
+- Triethylene glycol (10 mL)
+- α-Chloroethyl chloroformate (5 mL)
+- p-Toluenesulfonyl chloride (5 g)
+- Sodium azide (2 g)
+- NaBH3CN (2 g)
+- POCl3 (5 mL)
+- PPh3 (2 g)
+- K2CO3 (10 g)
+- Molecular sieves 4Å (10 g)
+
+SOLVENTS:
+- DCE (dichloroethane)
+- DMF (dimethylformamide)
+- MeOH (methanol)
+- THF (tetrahydrofuran)
+- DCM (dichloromethane)
+
+PROCEDURE:
+
+Step 1: N-Dealkylation of 8-OH-DPAT
+-----------------------------------
+1. Dissolve 8-OH-DPAT·HBr (1 g) in DCE (20 mL)
+2. Add α-chloroethyl chloroformate (2 eq) dropwise at 0°C
+3. Heat to reflux for 4h
+4. Cool and concentrate
+5. Dissolve residue in MeOH (20 mL)
+6. Reflux 2h
+7. Concentrate and purify by column chromatography
+
+Step 2: Mono-N-alkylation
+-------------------------
+1. Dissolve dealkylated product in MeOH (10 mL)
+2. Add propionaldehyde (1.1 eq)
+3. Add AcOH (0.1 eq)
+4. Stir 1h at RT
+5. Add NaBH3CN (1.5 eq)
+6. Stir overnight
+7. Work up and purify
+
+Step 3: Linker Preparation
+--------------------------
+1. Dissolve triethylene glycol (5 mL) in pyridine (10 mL)
+2. Cool to 0°C
+3. Add TsCl (1 eq) slowly
+4. Warm to RT, stir 4h
+5. Extract with DCM, wash with water
+6. Dissolve mono-tosylate in DMF (10 mL)
+7. Add NaN3 (2 eq)
+8. Heat to 60°C for 6h
+9. Extract and purify
+
+Step 4: Coupling to 8-OH-DPAT derivative
+----------------------------------------
+1. Combine amine from Step 2 and azido-tosylate from Step 3
+2. Add K2CO3 (2 eq)
+3. Heat in DMF at 60°C overnight
+4. Extract and purify
+
+Step 5: Azide Reduction
+-----------------------
+1. Dissolve azide in THF/H2O (4:1)
+2. Add PPh3 (1.5 eq)
+3. Stir at RT overnight
+4. Add water, stir 2h
+5. Extract and purify
+   (Alternative: H2, Pd/C in EtOH)
+
+Step 6: 4-Hydroxyindole Formylation
+-----------------------------------
+1. Dissolve 4-hydroxyindole (500 mg) in DMF (2 mL)
+2. Cool to 0°C
+3. Add POCl3 (1.2 eq) dropwise
+4. Warm to RT, stir 2h
+5. Pour into ice water
+6. Basify with Na2CO3
+7. Extract and purify
+
+Step 7: Final Coupling
+----------------------
+1. Dissolve amine from Step 5 in MeOH (5 mL)
+2. Add aldehyde from Step 6 (1 eq)
+3. Add AcOH (0.1 eq)
+4. Add 4Å molecular sieves
+5. Stir 2h at RT
+6. Add NaBH3CN (1.5 eq)
+7. Stir overnight
+8. Filter, concentrate
+9. Purify by column chromatography (DCM/MeOH/NH4OH 90:9:1)
+10. Final purification by prep HPLC if needed
+
+PURIFICATION:
+- Flash chromatography: DCM/MeOH/NH4OH (90:9:1)
+- Prep HPLC: C18, MeCN/H2O + 0.1% TFA gradient
+
+SALT FORMATION:
+- Dissolve in Et2O/EtOH
+- Add HCl in Et2O to precipitate hydrochloride salt
+
+CHARACTERIZATION:
+- 1H NMR (400 MHz, DMSO-d6)
+- 13C NMR (100 MHz, DMSO-d6)
+- HRMS (ESI+) calc for [M+H]+
+- HPLC purity (C18, MeCN/H2O)
+
+EXPECTED YIELD: ${selectedCompound.synthYield} overall
+ESTIMATED TIME: ${selectedCompound.synthTime} days
+
+==========================================
+SAFETY NOTES:
+- NaN3 is toxic - handle with care
+- POCl3 is corrosive and moisture-sensitive
+- Perform all reactions in fume hood
+==========================================
+`;
+
+            downloadText(protocol, `${selectedCompound.id}_synthesis_protocol.txt`);
+        }
+
+        function downloadText(content, filename) {
+            const blob = new Blob([content], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

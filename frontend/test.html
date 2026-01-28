@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drug Design Test</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 40px auto; padding: 20px; background: #1a1a2e; color: #fff; }
+        textarea { width: 100%; height: 100px; padding: 10px; font-size: 16px; background: #16213e; color: #fff; border: 1px solid #0f3460; }
+        button { background: #e94560; color: white; padding: 15px 30px; font-size: 18px; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #ff6b6b; }
+        button:disabled { background: #666; }
+        #results { margin-top: 20px; background: #16213e; padding: 20px; border-radius: 8px; white-space: pre-wrap; }
+        .candidate { background: #0f3460; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .score { color: #4ecca3; font-weight: bold; }
+        h1 { color: #e94560; }
+        h3 { color: #4ecca3; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Drug Design Platform</h1>
+    <p>Enter any drug design prompt - the AI will research the target and design optimal candidates.</p>
+
+    <textarea id="prompt" placeholder="Example: Design a novel FAAH inhibitor similar to PF-04457845">Design a novel FAAH inhibitor similar to PF-04457845</textarea>
+    <br>
+    <button onclick="design()" id="btn">Design Molecules</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function design() {
+            const btn = document.getElementById('btn');
+            const results = document.getElementById('results');
+            const prompt = document.getElementById('prompt').value;
+
+            btn.disabled = true;
+            btn.textContent = 'Designing... (2-3 minutes)';
+            results.innerHTML = '<p>Claude is researching the target and designing molecules...</p>';
+
+            try {
+                const res = await fetch('http://localhost:8000/api/v1/design/advanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, max_hours: 0.5 })
+                });
+
+                const data = await res.json();
+
+                let html = '<h3>Target Analysis</h3>';
+                html += `<p><b>Target:</b> ${data.target || 'N/A'}</p>`;
+                html += `<p><b>Type:</b> ${data.target_type || 'N/A'}</p>`;
+                html += `<p><b>Mechanism:</b> ${data.mechanism || 'N/A'}</p>`;
+
+                if (data.essential_features && data.essential_features.length) {
+                    html += `<p><b>Essential Features:</b></p><ul>`;
+                    data.essential_features.forEach(f => html += `<li style="color:#4ecca3">${f}</li>`);
+                    html += '</ul>';
+                }
+
+                if (data.avoid_features && data.avoid_features.length) {
+                    html += `<p><b>Features to Avoid:</b></p><ul>`;
+                    data.avoid_features.forEach(f => html += `<li style="color:#ff6b6b">${f}</li>`);
+                    html += '</ul>';
+                }
+
+                html += `<h3>Top Candidates (${data.candidates?.length || 0} total)</h3>`;
+
+                if (data.candidates) {
+                    data.candidates.slice(0, 10).forEach(c => {
+                        html += `<div class="candidate">
+                            <b>#${c.rank}: ${c.name}</b> <span class="score">${(c.scores.overall * 100).toFixed(0)}%</span><br>
+                            <code>${c.smiles}</code><br>
+                            <small>MW: ${c.properties.molecular_weight} | LogP: ${c.properties.logp} | QED: ${c.properties.qed}</small><br>
+                            <small>${c.rationale}</small>
+                        </div>`;
+                    });
+                }
+
+                html += `<p><small>Runtime: ${data.runtime_seconds?.toFixed(0)}s | Iterations: ${data.iterations}</small></p>`;
+                results.innerHTML = html;
+
+            } catch (e) {
+                results.innerHTML = `<p style="color:red">Error: ${e.message}</p>`;
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Design Molecules';
+        }
+    </script>
+</body>
+</html>

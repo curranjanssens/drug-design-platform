@@ -1,0 +1,17 @@
+# Minimal requirements for running acceptance tests
+# Install with: pip install -r requirements-minimal.txt
+
+# Chemistry (required)
+rdkit
+
+# Data handling
+numpy
+pandas
+
+# Configuration
+pydantic
+pydantic-settings
+python-dotenv
+
+# Logging
+loguru
