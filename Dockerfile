@@ -5,9 +5,12 @@ FROM continuumio/miniconda3:latest
 # Set working directory
 WORKDIR /app
 
-# Install RDKit via conda (this is the reliable way)
-RUN conda install -c conda-forge rdkit=2023.09.1 -y && \
+# Create conda environment with Python 3.11 and RDKit
+RUN conda create -n drugdesign python=3.11 rdkit -c conda-forge -y && \
     conda clean -afy
+
+# Make RUN commands use the new environment
+SHELL ["conda", "run", "-n", "drugdesign", "/bin/bash", "-c"]
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -17,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements (simplified)
 COPY requirements-railway.txt .
 
-# Install Python dependencies via pip (non-chemistry ones)
+# Install Python dependencies via pip
 RUN pip install --no-cache-dir -r requirements-railway.txt
 
 # Copy application code
@@ -33,5 +36,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application
-CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application with conda environment
+CMD ["conda", "run", "--no-capture-output", "-n", "drugdesign", "uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
